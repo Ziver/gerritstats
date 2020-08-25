@@ -46,9 +46,9 @@ public class SshCommand {
         try {
             String privateKey = gerritServer.getPrivateKey();
             String command = String.format("ssh -p %s %s %s gerrit %s",
-                    String.valueOf(gerritServer.getPort()),
+                    String.valueOf(gerritServer.getServerPort()),
                             privateKey != null ? "-i " + privateKey : "",
-                            gerritServer.getServerName(),
+                            gerritServer.getServerAddress(),
                     gerritCommand);
             System.out.println(command);
 

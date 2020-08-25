@@ -39,6 +39,16 @@ public class CommandLineParser {
             required = false)
     private String privateKey;
 
+    @Parameter(names = {"-u", "--username"},
+            description = "The username to access the server.",
+            required = false)
+    private String username;
+
+    @Parameter(names = {"-p", "--password"},
+            description = "The password to access the server.",
+            required = false)
+    private String password;
+
     @Parameter(names = {"-p", "--project"},
             description = "The Gerrit project from which to retrieve stats. This parameter can appear multiple times. "
                     + "If omitted, stats will be retrieved from all projects.")
@@ -74,7 +84,9 @@ public class CommandLineParser {
     @Nonnull
     private final JCommander jCommander = new JCommander(this);
 
+
     public static class ServerAndPort {
+        private String serverProtocol;
         private String serverName;
         private int serverPort;
 
@@ -85,14 +97,21 @@ public class CommandLineParser {
 
                 int protocolSeparator = value.indexOf("://");
                 int portSeparator = value.lastIndexOf(':');
+                int serverNameStart = 0;
                 int serverNameEnd = value.length();
+
+                if (protocolSeparator != -1) {
+                    result.serverProtocol = value.substring(0, portSeparator);
+                    serverNameStart = protocolSeparator + 3;
+                }
+
                 if (portSeparator != -1 && portSeparator != protocolSeparator) {
                     result.serverPort = Integer.parseInt(value.substring(portSeparator + 1));
                     serverNameEnd = portSeparator;
                 }
 
-                int serverNameStart = protocolSeparator != -1 ? protocolSeparator + 3 : 0;
                 result.serverName = value.substring(serverNameStart, serverNameEnd);
+
                 if (result.serverName.endsWith("/")) {
                     result.serverName = result.serverName.substring(0, result.serverName.length() - 1);
                 }
