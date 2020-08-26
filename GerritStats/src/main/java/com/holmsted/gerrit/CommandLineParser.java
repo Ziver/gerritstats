@@ -62,13 +62,6 @@ public class CommandLineParser {
     @Nonnull
     private final JCommander jCommander = new JCommander(this);
 
-    public static class OutputConverter implements IStringConverter<Output> {
-        @Override
-        public Output convert(String value) {
-            return Output.fromString(value);
-        }
-    }
-
     public CommandLineParser() {
         ClassLoader loader = getClass().getClassLoader();
         URL url = loader.getResource("META-INF/MANIFEST.MF");
