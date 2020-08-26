@@ -1,7 +1,7 @@
-package com.holmsted.gerrit.processors.perperson;
+package com.holmsted.gerrit.processor.user;
 
 import com.holmsted.gerrit.Commit;
-import com.holmsted.gerrit.processors.perperson.IdentityRecord.ReviewerData;
+import com.holmsted.gerrit.processor.user.IdentityRecord.ReviewerData;
 
 import java.util.Hashtable;
 

@@ -1,4 +1,4 @@
-package com.holmsted.gerrit.processors.perperson;
+package com.holmsted.gerrit.processor.user;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -17,8 +17,8 @@ import com.holmsted.file.FileWriter;
 import com.holmsted.gerrit.Commit;
 import com.holmsted.gerrit.Commit.Identity;
 import com.holmsted.gerrit.OutputRules;
-import com.holmsted.gerrit.processors.CommitDataProcessor;
-import com.holmsted.gerrit.processors.perperson.IdentityRecord.ReviewerData;
+import com.holmsted.gerrit.processor.CommitDataProcessor;
+import com.holmsted.gerrit.processor.user.IdentityRecord.ReviewerData;
 
 import java.io.File;
 import java.io.IOError;
@@ -34,7 +34,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 @SuppressWarnings("PMD.ExcessiveImports")
-class PerPersonJsonFormatter implements CommitDataProcessor.OutputFormatter<PerPersonData> {
+class UserJsonFormatter implements CommitDataProcessor.OutputFormatter<UserData> {
     private static final String RES_OUTPUT_DIR = ".";
     private static final String DATA_PATH = ".";
 
@@ -43,13 +43,13 @@ class PerPersonJsonFormatter implements CommitDataProcessor.OutputFormatter<PerP
 
     private final Map<String, Identity> identities = new HashMap<>();
 
-    public PerPersonJsonFormatter(@Nonnull OutputRules outputRules) {
+    public UserJsonFormatter(@Nonnull OutputRules outputRules) {
         outputDir = new File(outputRules.getOutputDir());
         resOutputDir = new File(outputDir.getAbsolutePath() + File.separator + RES_OUTPUT_DIR);
     }
 
     @Override
-    public void format(@Nonnull PerPersonData data) {
+    public void format(@Nonnull UserData data) {
         if (!resOutputDir.exists() && !resOutputDir.mkdirs()) {
             throw new IOError(new IOException("Cannot create output directory " + outputDir.getAbsolutePath()));
         }
@@ -98,7 +98,7 @@ class PerPersonJsonFormatter implements CommitDataProcessor.OutputFormatter<PerP
                 .build();
     }
 
-    private void createDatasetOverviewJs(PerPersonData perPersonData) {
+    private void createDatasetOverviewJs(UserData userData) {
         Gson gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(Identity.class, new IdentityMappingSerializer())
@@ -106,14 +106,14 @@ class PerPersonJsonFormatter implements CommitDataProcessor.OutputFormatter<PerP
                 .create();
 
         JsonObject datasetOverview = new JsonObject();
-        datasetOverview.add("projectName", gson.toJsonTree(perPersonData.getQueryData().getDisplayableProjectName()));
-        datasetOverview.add("filenames", gson.toJsonTree(perPersonData.getQueryData().getFilenames()));
-        datasetOverview.add("branchList", gson.toJsonTree(perPersonData.getQueryData().getBranches()));
-        datasetOverview.add("fromDate", gson.toJsonTree(perPersonData.getFromDate()));
-        datasetOverview.add("toDate", gson.toJsonTree(perPersonData.getToDate()));
+        datasetOverview.add("projectName", gson.toJsonTree(userData.getQueryData().getDisplayableProjectName()));
+        datasetOverview.add("filenames", gson.toJsonTree(userData.getQueryData().getFilenames()));
+        datasetOverview.add("branchList", gson.toJsonTree(userData.getQueryData().getBranches()));
+        datasetOverview.add("fromDate", gson.toJsonTree(userData.getFromDate()));
+        datasetOverview.add("toDate", gson.toJsonTree(userData.getToDate()));
         datasetOverview.add("generatedDate", gson.toJsonTree(new Date().getTime()));
-        datasetOverview.add("hashCode", gson.toJsonTree(perPersonData.getQueryData().getDatasetKey()));
-        datasetOverview.add("gerritVersion", gson.toJsonTree(perPersonData.getQueryData().getMinGerritVersion()));
+        datasetOverview.add("hashCode", gson.toJsonTree(userData.getQueryData().getDatasetKey()));
+        datasetOverview.add("gerritVersion", gson.toJsonTree(userData.getQueryData().getMinGerritVersion()));
 
         new JsonFileBuilder(outputDir)
                 .setOutputFilename("datasetOverview.js")

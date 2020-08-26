@@ -1,4 +1,4 @@
-package com.holmsted.gerrit.processors;
+package com.holmsted.gerrit.processor;
 
 import com.holmsted.gerrit.Commit;
 import com.holmsted.gerrit.CommitFilter;

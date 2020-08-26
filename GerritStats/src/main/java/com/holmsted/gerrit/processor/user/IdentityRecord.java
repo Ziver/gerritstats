@@ -1,4 +1,4 @@
-package com.holmsted.gerrit.processors.perperson;
+package com.holmsted.gerrit.processor.user;
 
 import com.holmsted.gerrit.Commit;
 import com.holmsted.gerrit.Commit.Approval;

@@ -1,4 +1,4 @@
-package com.holmsted.gerrit.processors.perperson;
+package com.holmsted.gerrit.processor.user;
 
 import com.holmsted.gerrit.Commit;
 import com.holmsted.gerrit.QueryData;
@@ -11,7 +11,7 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-public class PerPersonData {
+public class UserData {
 
     private final Map<Commit.Identity, IdentityRecord> records = new Hashtable<>();
 

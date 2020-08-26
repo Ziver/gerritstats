@@ -2,7 +2,7 @@ package com.holmsted.gerrit;
 
 import com.holmsted.file.FileReader;
 import com.holmsted.gerrit.GerritStatParser.GerritData;
-import com.holmsted.gerrit.processors.perperson.PerPersonDataProcessor;
+import com.holmsted.gerrit.processor.user.UserDataProcessor;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ public final class GerritStatsMain {
             queryData = queryData.anonymize();
         }
 
-        PerPersonDataProcessor perPersonFormatter = new PerPersonDataProcessor(filter, outputRules);
+        UserDataProcessor perPersonFormatter = new UserDataProcessor(filter, outputRules);
         perPersonFormatter.invoke(queryData);
     }
 

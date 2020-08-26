@@ -1,27 +1,27 @@
-package com.holmsted.gerrit.processors.perperson;
+package com.holmsted.gerrit.processor.user;
 
 import com.holmsted.gerrit.Commit;
 import com.holmsted.gerrit.Commit.Identity;
 import com.holmsted.gerrit.CommitFilter;
 import com.holmsted.gerrit.OutputRules;
 import com.holmsted.gerrit.QueryData;
-import com.holmsted.gerrit.processors.CommitDataProcessor;
-import com.holmsted.gerrit.processors.CommitVisitor;
+import com.holmsted.gerrit.processor.CommitDataProcessor;
+import com.holmsted.gerrit.processor.CommitVisitor;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Nonnull;
 
-public class PerPersonDataProcessor extends CommitDataProcessor<PerPersonData> {
+public class UserDataProcessor extends CommitDataProcessor<UserData> {
 
-    private final PerPersonData records = new PerPersonData();
+    private final UserData records = new UserData();
 
-    public PerPersonDataProcessor(@Nonnull CommitFilter filter, @Nonnull OutputRules outputRules) {
+    public UserDataProcessor(@Nonnull CommitFilter filter, @Nonnull OutputRules outputRules) {
         super(filter, outputRules);
     }
 
     @Override
-    public void process(@Nonnull OutputFormatter<PerPersonData> formatter, @Nonnull QueryData queryData) {
+    public void process(@Nonnull OutputFormatter<UserData> formatter, @Nonnull QueryData queryData) {
         records.clear();
         final AtomicLong fromDate = new AtomicLong(Long.MAX_VALUE);
         final AtomicLong toDate = new AtomicLong(Long.MIN_VALUE);
@@ -118,8 +118,8 @@ public class PerPersonDataProcessor extends CommitDataProcessor<PerPersonData> {
 
     @Nonnull
     @Override
-    protected OutputFormatter<PerPersonData> createOutputFormatter() {
-        return new PerPersonJsonFormatter(getOutputRules());
+    protected OutputFormatter<UserData> createOutputFormatter() {
+        return new UserJsonFormatter(getOutputRules());
     }
 
     @Nonnull
