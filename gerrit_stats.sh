@@ -9,14 +9,15 @@
 # ------------
 
 script_path=$(dirname "$0")
-output_dir="${script_path}/out-html"
+generation_dir=$(realpath "${script_path}/GerritStats/out-html")
+output_dir=$(realpath "${script_path}/out-html")
 
 new_args=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --output-dir | -o)
-            output_dir=$2
+            output_dir=$(realpath "$2")
             shift 2
             ;;
 
@@ -32,14 +33,17 @@ if [[ ! -d "${script_path}" ]]; then
     exit 1
 fi
 
-output_dir=$(realpath "${output_dir}")
-mkdir -p "${output_dir}/data"
+# -----
+# Build
+# -----
+
+"${script_path}/gradlew" -p "${script_path}" assemble
 
 # -------------
 # Generate data
 # -------------
 
-java -Xmx4096m -Xms256m -jar "${script_path}/GerritStats/build/libs/GerritStats.jar" -o "${output_dir}/data" "${new_args[@]}"
+java -Xmx4096m -Xms256m -jar "${script_path}/GerritStats/build/libs/GerritStats.jar" -o "${generation_dir}/data" "${new_args[@]}"
 exit_code=$?
 
 if [[ ${exit_code} -ne 0 ]]; then
@@ -51,14 +55,16 @@ fi
 # Generate website
 # ----------------
 
-cd "${script_path}/GerritStats" || exit
-npm run webpack -o "${output_dir}/bundle.js"
+npm run webpack --prefix "${script_path}/GerritStats" -o "${output_dir}/bundle.js"
 exit_code=$?
-cd - || exit
 
 if [[ ${exit_code} -ne 0 ]]; then
     echo "ERROR: Webpack failed, please check above log."
+    exit 1
 fi
+
+mkdir -p "${output_dir}"
+cp "${generation_dir}/index.html" "${output_dir}"
 
 echo
 echo "Output generated to ${output_dir}"

@@ -156,18 +156,17 @@ class PerPersonJsonFormatter implements CommitDataProcessor.OutputFormatter<PerP
      * See e.g. http://stackoverflow.com/questions/7346563/loading-local-json-file
      */
     private void writeUserdataJsonFile(@Nonnull IdentityRecord record, @Nonnull String json) {
-        String outputFilename = record.getFilenameStem() + ".js";
-        System.out.println("Creating " + outputFilename);
+        String filePath = "users" + File.separator + record.getFilenameStem() + ".js";
+        System.out.println("Creating " + filePath);
 
         StringWriter writer = new StringWriter();
         writer.write(String.format("userdata['%s'] = %s;",
                 record.getFilenameStem(),
                 json));
 
-        FileWriter.writeFile(outputDir.getPath()
-                + File.separator + DATA_PATH
-                + File.separator + "users"
-                + File.separator + outputFilename, writer.toString());
+        FileWriter.writeFile(
+                outputDir.getPath() + File.separator + DATA_PATH + File.separator + filePath,
+                writer.toString());
     }
 
     private static class PatchSetCommentTableSerializer implements JsonSerializer<PatchSetCommentTable> {
