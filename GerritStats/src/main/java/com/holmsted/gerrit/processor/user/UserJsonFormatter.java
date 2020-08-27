@@ -60,69 +60,6 @@ public class UserJsonFormatter implements OutputFormatter<UserData> {
             identities.put(identity.getIdentifier(), identity);
         }
 
-        createOverviewJs(orderedList);
-        createDatasetOverviewJs(data);
-        createUserFiles(orderedList);
-        createIdsJs();
-
-        System.out.println("Output written to " + outputDir.getAbsolutePath());
-    }
-
-    private void createIdsJs() {
-        Gson gson = new GsonBuilder()
-                .setPrettyPrinting()
-                .registerTypeAdapter(Identity.class, new IdentitySerializer())
-                .create();
-
-        new JsonFileBuilder(outputDir)
-                .setOutputFilename("ids.js")
-                .setMemberName("ids")
-                .setSerializedJs(gson.toJson(identities))
-                .build();
-    }
-
-    private void createOverviewJs(IdentityRecordList identityRecords) {
-        Gson gson = new GsonBuilder()
-                .setPrettyPrinting()
-                .registerTypeAdapter(Identity.class, new IdentityMappingSerializer())
-                .registerTypeAdapter(IdentityRecord.class, new IdentityRecordOverviewSerializer())
-                .create();
-
-        String json = gson.toJson(identityRecords);
-        json = IdentityMappingSerializer.postprocess(json);
-
-        new JsonFileBuilder(outputDir)
-                .setOutputFilename("overview.js")
-                .setMemberName("overviewUserdata")
-                .setSerializedJs(json)
-                .build();
-    }
-
-    private void createDatasetOverviewJs(UserData userData) {
-        Gson gson = new GsonBuilder()
-                .setPrettyPrinting()
-                .registerTypeAdapter(Identity.class, new IdentityMappingSerializer())
-                .registerTypeAdapter(IdentityRecord.class, new IdentityRecordOverviewSerializer())
-                .create();
-
-        JsonObject datasetOverview = new JsonObject();
-        datasetOverview.add("projectName", gson.toJsonTree(userData.getQueryData().getDisplayableProjectName()));
-        datasetOverview.add("filenames", gson.toJsonTree(userData.getQueryData().getFilenames()));
-        datasetOverview.add("branchList", gson.toJsonTree(userData.getQueryData().getBranches()));
-        datasetOverview.add("fromDate", gson.toJsonTree(userData.getFromDate()));
-        datasetOverview.add("toDate", gson.toJsonTree(userData.getToDate()));
-        datasetOverview.add("generatedDate", gson.toJsonTree(new Date().getTime()));
-        datasetOverview.add("hashCode", gson.toJsonTree(userData.getQueryData().getDatasetKey()));
-        datasetOverview.add("gerritVersion", gson.toJsonTree(userData.getQueryData().getMinGerritVersion()));
-
-        new JsonFileBuilder(outputDir)
-                .setOutputFilename("datasetOverview.js")
-                .setMemberName("datasetOverview")
-                .setSerializedJs(gson.toJson(datasetOverview))
-                .build();
-    }
-
-    private void createUserFiles(@Nonnull IdentityRecordList orderedList) {
         Gson gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(PatchSetCommentTable.class, new PatchSetCommentTableSerializer())
@@ -143,6 +80,8 @@ public class UserJsonFormatter implements OutputFormatter<UserData> {
 
             writeUserdataJsonFile(record, json);
         }
+
+        System.out.println("Output written to " + outputDir.getAbsolutePath());
     }
 
     /**
@@ -201,44 +140,6 @@ public class UserJsonFormatter implements OutputFormatter<UserData> {
         }
     }
 
-    private static class IdentityRecordOverviewSerializer implements JsonSerializer<IdentityRecord> {
-
-        @Override
-        public JsonElement serialize(IdentityRecord identityRecord,
-                                     Type typeOfSrc,
-                                     JsonSerializationContext context) {
-            JsonObject json = new JsonObject();
-            json.add("identifier", context.serialize(identityRecord.getFilenameStem()));
-            json.add("identity", context.serialize(identityRecord.identity));
-            json.add("reviewCountPlus2", context.serialize(identityRecord.getReviewCountPlus2()));
-            json.add("reviewCountPlus1", context.serialize(identityRecord.getReviewCountPlus1()));
-            json.add("reviewCountMinus1", context.serialize(identityRecord.getReviewCountMinus1()));
-            json.add("reviewCountMinus2", context.serialize(identityRecord.getReviewCountMinus2()));
-            json.add("allCommentsWritten", context.serialize(identityRecord.getAllCommentsWritten().size()));
-            json.add("allCommentsReceived", context.serialize(identityRecord.getAllCommentsReceived().size()));
-            json.add("commitCount", context.serialize(identityRecord.getCommits().size()));
-            json.add("averageTimeInCodeReview", context.serialize(identityRecord.getAverageTimeInCodeReview()));
-            json.add("receivedCommentRatio", context.serialize(identityRecord.getReceivedCommentRatio()));
-            json.add("reviewCommentRatio", context.serialize(identityRecord.getReviewCommentRatio()));
-            json.add("addedAsReviewerToCount", context.serialize(identityRecord.addedAsReviewerTo.size()));
-            json.add("selfReviewedCommitCount", context.serialize(identityRecord.getSelfReviewedCommits().size()));
-            json.add("abandonedCommitCount", context.serialize(identityRecord.getAbandonedCommitCount()));
-            json.add("firstActiveDate", context.serialize(identityRecord.firstActiveDate));
-            json.add("lastActiveDate", context.serialize(identityRecord.lastActiveDate));
-
-            List<JsonObject> reviewerList = new ArrayList<>();
-            for (Identity reviewer : identityRecord.getMyReviewerList()) {
-                JsonObject reviewerRecord = new JsonObject();
-                ReviewerData reviewerData = identityRecord.getReviewerDataForOwnCommitFor(reviewer);
-                reviewerRecord.add("identity", context.serialize(reviewer));
-                reviewerRecord.add("reviewData", context.serialize(reviewerData));
-                reviewerList.add(reviewerRecord);
-            }
-            json.add("myReviewerList", context.serialize(reviewerList));
-            return json;
-        }
-    }
-
     private static class IdentityRecordTypeAdapterFactory implements TypeAdapterFactory {
 
         @Override
@@ -270,26 +171,6 @@ public class UserJsonFormatter implements OutputFormatter<UserData> {
                     return delegate.fromJsonTree(tree);
                 }
             };
-        }
-    }
-
-    private class IdentitySerializer implements JsonSerializer<Commit.Identity> {
-        @Override
-        public JsonElement serialize(Identity identity, Type typeOfSrc, JsonSerializationContext context) {
-            JsonObject json = new JsonObject();
-            String identifier = identity.getIdentifier();
-            json.add("identifier", context.serialize(identifier));
-            json.add("name", context.serialize(identity.name));
-            json.add("email", context.serialize(identity.email));
-            json.add("username", context.serialize(identity.username));
-
-            // There can be some identities in the reviewer data that are not in the per-person data.
-            // To make sure all the references to users map work, add them here.
-            if (!identities.containsKey(identifier)) {
-                identities.put(identifier, identity);
-            }
-
-            return json;
         }
     }
 

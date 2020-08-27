@@ -23,14 +23,18 @@ public abstract class CommitDataProcessor<T> {
      * returning it as a string.
      */
     public void invoke(@Nonnull QueryData queryData) {
-        OutputFormatter<T> formatter = createOutputFormatter();
-        process(formatter, queryData);
+        T data = process(queryData);
+
+        OutputFormatter[] formatters = createOutputFormatter();
+        for (OutputFormatter formatter : formatters) {
+            formatter.format(data);
+        }
     }
 
-    protected abstract void process(@Nonnull OutputFormatter<T> formatter, @Nonnull QueryData queryData);
+    protected abstract T process(@Nonnull QueryData queryData);
 
     @Nonnull
-    protected abstract OutputFormatter<T> createOutputFormatter();
+    protected abstract OutputFormatter<T>[] createOutputFormatter();
 
     @Nonnull
     protected CommitFilter getCommitFilter() {

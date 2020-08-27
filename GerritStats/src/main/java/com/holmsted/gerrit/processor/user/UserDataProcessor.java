@@ -15,22 +15,22 @@ import javax.annotation.Nonnull;
 
 public class UserDataProcessor extends CommitDataProcessor<UserData> {
 
-    private final UserData records = new UserData();
 
     public UserDataProcessor(@Nonnull CommitFilter filter, @Nonnull OutputSettings outputSettings) {
         super(filter, outputSettings);
     }
 
+
     @Override
-    public void process(@Nonnull OutputFormatter<UserData> formatter, @Nonnull QueryData queryData) {
-        records.clear();
+    public UserData process(@Nonnull QueryData queryData) {
+        final UserData records = new UserData();
         final AtomicLong fromDate = new AtomicLong(Long.MAX_VALUE);
         final AtomicLong toDate = new AtomicLong(Long.MIN_VALUE);
 
         CommitVisitor visitor = new CommitVisitor(getCommitFilter()) {
             @Override
             public void visitCommit(@Nonnull Commit commit) {
-                IdentityRecord ownerRecord = getOrCreateRecord(commit.owner);
+                IdentityRecord ownerRecord = getOrCreateRecord(records, commit.owner);
                 ownerRecord.addCommit(commit);
 
                 if (commit.lastUpdatedDate > toDate.get()) {
@@ -48,7 +48,7 @@ public class UserDataProcessor extends CommitDataProcessor<UserData> {
                         ownerRecord.addReviewerForOwnCommit(identity);
                     }
 
-                    IdentityRecord reviewerRecord = getOrCreateRecord(identity);
+                    IdentityRecord reviewerRecord = getOrCreateRecord(records, identity);
                     if (!commit.owner.equals(reviewerRecord.identity)) {
                         reviewerRecord.addReviewedCommit(commit);
                     }
@@ -57,7 +57,7 @@ public class UserDataProcessor extends CommitDataProcessor<UserData> {
 
             @Override
             public void visitPatchSet(@Nonnull Commit commit, @Nonnull Commit.PatchSet patchSet) {
-                IdentityRecord ownerRecord = getOrCreateRecord(commit.owner);
+                IdentityRecord ownerRecord = getOrCreateRecord(records, commit.owner);
                 for (Commit.Approval approval : patchSet.approvals) {
                     if (approval.type == null) {
                         continue;
@@ -89,7 +89,7 @@ public class UserDataProcessor extends CommitDataProcessor<UserData> {
                 }
 
                 if (!grantedBy.equals(patchSetAuthor)) {
-                    IdentityRecord record = getOrCreateRecord(grantedBy);
+                    IdentityRecord record = getOrCreateRecord(records, grantedBy);
                     record.addApprovalByThisIdentity(patchSetAuthor, approval);
                 }
             }
@@ -98,38 +98,44 @@ public class UserDataProcessor extends CommitDataProcessor<UserData> {
             public void visitPatchSetComment(@Nonnull Commit commit,
                                              @Nonnull Commit.PatchSet patchSet,
                                              @Nonnull Commit.PatchSetComment patchSetComment) {
-                IdentityRecord reviewerRecord = getOrCreateRecord(patchSetComment.reviewer);
+                IdentityRecord reviewerRecord = getOrCreateRecord(records, patchSetComment.reviewer);
                 if (!patchSet.author.equals(patchSetComment.reviewer)) {
                     reviewerRecord.addWrittenComment(commit, patchSet, patchSetComment);
                 }
 
-                IdentityRecord authorRecord = getOrCreateRecord(patchSet.author);
+                IdentityRecord authorRecord = getOrCreateRecord(records, patchSet.author);
                 if (!patchSet.author.equals(patchSetComment.reviewer)) {
                     authorRecord.addReceivedComment(commit, patchSet, patchSetComment);
                 }
             }
         };
+
         visitor.visit(queryData.getCommits());
         records.setQueryData(queryData);
         records.setFromDate(fromDate.get());
         records.setToDate(toDate.get());
 
-        formatter.format(records);
+        return records;
     }
 
     @Nonnull
-    @Override
-    protected OutputFormatter<UserData> createOutputFormatter() {
-        return new UserJsonFormatter(getOutputSettings());
-    }
-
-    @Nonnull
-    private IdentityRecord getOrCreateRecord(@Nonnull Commit.Identity identity) {
+    private IdentityRecord getOrCreateRecord(UserData records, @Nonnull Commit.Identity identity) {
         IdentityRecord identityRecord = records.get(identity);
         if (identityRecord == null) {
             identityRecord = new IdentityRecord(identity);
             records.put(identity, identityRecord);
         }
         return identityRecord;
+    }
+
+    @Nonnull
+    @Override
+    public OutputFormatter<UserData>[] createOutputFormatter() {
+        return new OutputFormatter[]{
+                new DatasetOverviewJsonFormatter(getOutputSettings()),
+                new UserIdentityJsonFormatter(getOutputSettings()),
+                new UserOverviewJsonFormatter(getOutputSettings()),
+                new UserJsonFormatter(getOutputSettings())
+        };
     }
 }

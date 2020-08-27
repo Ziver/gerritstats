@@ -1,17 +1,14 @@
 package com.holmsted.gerrit.processor.file;
 
 import com.holmsted.gerrit.Commit;
-import com.holmsted.gerrit.Commit.Identity;
 import com.holmsted.gerrit.CommitFilter;
 import com.holmsted.gerrit.OutputSettings;
 import com.holmsted.gerrit.QueryData;
 import com.holmsted.gerrit.processor.CommitDataProcessor;
 import com.holmsted.gerrit.processor.CommitVisitor;
 import com.holmsted.gerrit.processor.OutputFormatter;
-import com.holmsted.gerrit.processor.user.IdentityRecord;
 
 import javax.annotation.Nonnull;
-import java.util.concurrent.atomic.AtomicLong;
 
 
 public class FileDataProcessor extends CommitDataProcessor<FileData> {
@@ -21,7 +18,7 @@ public class FileDataProcessor extends CommitDataProcessor<FileData> {
     }
 
     @Override
-    public void process(@Nonnull OutputFormatter<FileData> formatter, @Nonnull QueryData queryData) {
+    public FileData process(@Nonnull QueryData queryData) {
         CommitVisitor visitor = new CommitVisitor(getCommitFilter()) {
             @Override
             public void visitCommit(@Nonnull Commit commit) {
@@ -45,12 +42,15 @@ public class FileDataProcessor extends CommitDataProcessor<FileData> {
 
             }
         };
+
+        return null;
     }
 
     @Nonnull
     @Override
-    protected OutputFormatter<FileData> createOutputFormatter() {
-        return new FileJsonFormatter(getOutputSettings());
+    public OutputFormatter<FileData>[] createOutputFormatter() {
+        return new OutputFormatter[] {
+                new FileJsonFormatter(getOutputSettings())
+        };
     }
-
 }
