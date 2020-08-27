@@ -38,6 +38,7 @@ public class GerritStatParser {
         GerritData data;
         try {
             JSONObject object = JsonUtils.readJsonString(jsonFileData);
+
             int gerritStatsVersion = object.optInt("gerritStatsVersion");
             if (gerritStatsVersion == 0) {
                 data = parseLegacyFormatData(jsonFileData);

@@ -2,12 +2,12 @@ package com.holmsted.gerrit;
 
 import javax.annotation.Nonnull;
 
-public class OutputRules {
+public class OutputSettings {
 
     @Nonnull
     private final CommandLineParser commandLine;
 
-    OutputRules(@Nonnull CommandLineParser commandLine) {
+    OutputSettings(@Nonnull CommandLineParser commandLine) {
         this.commandLine = commandLine;
     }
 

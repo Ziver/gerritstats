@@ -43,7 +43,7 @@ fi
 # Generate data
 # -------------
 
-java -Xmx4096m -Xms256m -jar "${script_path}/GerritStats/build/libs/GerritStats.jar" -o "${generation_dir}/data" "${new_args[@]}"
+java -Xmx4096m -Xms256m -jar "${script_path}/GerritStats/build/libs/GerritStats.jar" -o "${generation_dir}" "${new_args[@]}"
 exit_code=$?
 
 if [[ ${exit_code} -ne 0 ]]; then

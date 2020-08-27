@@ -2,6 +2,8 @@ package com.holmsted.gerrit;
 
 import com.holmsted.file.FileReader;
 import com.holmsted.gerrit.GerritStatParser.GerritData;
+import com.holmsted.gerrit.processor.CommitDataProcessor;
+import com.holmsted.gerrit.processor.file.FileDataProcessor;
 import com.holmsted.gerrit.processor.user.UserDataProcessor;
 
 import java.io.File;
@@ -53,15 +55,21 @@ public final class GerritStatsMain {
         QueryData queryData = new QueryData(commandLine.getFilenames(),
                 commits,
                 minVersion);
+        OutputSettings outputSettings = new OutputSettings(commandLine);
 
-        OutputRules outputRules = new OutputRules(commandLine);
-        if (outputRules.isAnonymizeDataEnabled()) {
+        if (outputSettings.isAnonymizeDataEnabled()) {
             System.out.println("Anonymizing data...");
             queryData = queryData.anonymize();
         }
 
-        UserDataProcessor perPersonFormatter = new UserDataProcessor(filter, outputRules);
-        perPersonFormatter.invoke(queryData);
+        CommitDataProcessor[] processors = new CommitDataProcessor[]{
+            new UserDataProcessor(filter, outputSettings),
+            new FileDataProcessor(filter, outputSettings),
+        };
+
+        for (CommitDataProcessor processor : processors) {
+            processor.invoke(queryData);
+        }
     }
 
     @Nonnull

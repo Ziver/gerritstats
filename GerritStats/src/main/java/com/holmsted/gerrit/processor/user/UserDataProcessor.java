@@ -3,10 +3,11 @@ package com.holmsted.gerrit.processor.user;
 import com.holmsted.gerrit.Commit;
 import com.holmsted.gerrit.Commit.Identity;
 import com.holmsted.gerrit.CommitFilter;
-import com.holmsted.gerrit.OutputRules;
+import com.holmsted.gerrit.OutputSettings;
 import com.holmsted.gerrit.QueryData;
 import com.holmsted.gerrit.processor.CommitDataProcessor;
 import com.holmsted.gerrit.processor.CommitVisitor;
+import com.holmsted.gerrit.processor.OutputFormatter;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -16,8 +17,8 @@ public class UserDataProcessor extends CommitDataProcessor<UserData> {
 
     private final UserData records = new UserData();
 
-    public UserDataProcessor(@Nonnull CommitFilter filter, @Nonnull OutputRules outputRules) {
-        super(filter, outputRules);
+    public UserDataProcessor(@Nonnull CommitFilter filter, @Nonnull OutputSettings outputSettings) {
+        super(filter, outputSettings);
     }
 
     @Override
@@ -119,7 +120,7 @@ public class UserDataProcessor extends CommitDataProcessor<UserData> {
     @Nonnull
     @Override
     protected OutputFormatter<UserData> createOutputFormatter() {
-        return new UserJsonFormatter(getOutputRules());
+        return new UserJsonFormatter(getOutputSettings());
     }
 
     @Nonnull

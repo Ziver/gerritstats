@@ -1,7 +1,7 @@
 package com.holmsted.gerrit.processor;
 
 import com.holmsted.gerrit.CommitFilter;
-import com.holmsted.gerrit.OutputRules;
+import com.holmsted.gerrit.OutputSettings;
 import com.holmsted.gerrit.QueryData;
 
 import javax.annotation.Nonnull;
@@ -11,15 +11,11 @@ public abstract class CommitDataProcessor<T> {
     @Nonnull
     private final CommitFilter filter;
     @Nonnull
-    private final OutputRules outputRules;
+    private final OutputSettings outputSettings;
 
-    public interface OutputFormatter<T> {
-        void format(@Nonnull T format);
-    }
-
-    public CommitDataProcessor(@Nonnull CommitFilter filter, @Nonnull OutputRules outputRules) {
+    public CommitDataProcessor(@Nonnull CommitFilter filter, @Nonnull OutputSettings outputSettings) {
         this.filter = filter;
-        this.outputRules = outputRules;
+        this.outputSettings = outputSettings;
     }
 
     /**
@@ -42,7 +38,7 @@ public abstract class CommitDataProcessor<T> {
     }
 
     @Nonnull
-    protected OutputRules getOutputRules() {
-        return outputRules;
+    protected OutputSettings getOutputSettings() {
+        return outputSettings;
     }
 }

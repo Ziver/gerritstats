@@ -16,9 +16,10 @@ import com.google.gson.stream.JsonWriter;
 import com.holmsted.file.FileWriter;
 import com.holmsted.gerrit.Commit;
 import com.holmsted.gerrit.Commit.Identity;
-import com.holmsted.gerrit.OutputRules;
-import com.holmsted.gerrit.processor.CommitDataProcessor;
+import com.holmsted.gerrit.OutputSettings;
+import com.holmsted.gerrit.processor.OutputFormatter;
 import com.holmsted.gerrit.processor.user.IdentityRecord.ReviewerData;
+import com.holmsted.json.JsonFileBuilder;
 
 import java.io.File;
 import java.io.IOError;
@@ -34,23 +35,22 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 @SuppressWarnings("PMD.ExcessiveImports")
-class UserJsonFormatter implements CommitDataProcessor.OutputFormatter<UserData> {
-    private static final String RES_OUTPUT_DIR = ".";
-    private static final String DATA_PATH = ".";
+public class UserJsonFormatter implements OutputFormatter<UserData> {
+    private static final String ROOT_OUTPUT_DIR = "data";
+    private static final String USER_DATA_PATH = "users";
 
     private final File outputDir;
-    private final File resOutputDir;
-
     private final Map<String, Identity> identities = new HashMap<>();
 
-    public UserJsonFormatter(@Nonnull OutputRules outputRules) {
-        outputDir = new File(outputRules.getOutputDir());
-        resOutputDir = new File(outputDir.getAbsolutePath() + File.separator + RES_OUTPUT_DIR);
+
+    public UserJsonFormatter(@Nonnull OutputSettings outputSettings) {
+        outputDir = new File(outputSettings.getOutputDir(), ROOT_OUTPUT_DIR);
     }
+
 
     @Override
     public void format(@Nonnull UserData data) {
-        if (!resOutputDir.exists() && !resOutputDir.mkdirs()) {
+        if (!outputDir.exists() && !outputDir.mkdirs()) {
             throw new IOError(new IOException("Cannot create output directory " + outputDir.getAbsolutePath()));
         }
 
@@ -62,7 +62,7 @@ class UserJsonFormatter implements CommitDataProcessor.OutputFormatter<UserData>
 
         createOverviewJs(orderedList);
         createDatasetOverviewJs(data);
-        createPerPersonFiles(orderedList);
+        createUserFiles(orderedList);
         createIdsJs();
 
         System.out.println("Output written to " + outputDir.getAbsolutePath());
@@ -122,7 +122,7 @@ class UserJsonFormatter implements CommitDataProcessor.OutputFormatter<UserData>
                 .build();
     }
 
-    private void createPerPersonFiles(@Nonnull IdentityRecordList orderedList) {
+    private void createUserFiles(@Nonnull IdentityRecordList orderedList) {
         Gson gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(PatchSetCommentTable.class, new PatchSetCommentTableSerializer())
@@ -148,7 +148,6 @@ class UserJsonFormatter implements CommitDataProcessor.OutputFormatter<UserData>
     /**
      * Writes a .js file with a json object for the given identity record.
      *
-     *
      * Ideally, pure .json files would be written,but it's not easily possible
      * to load json files locally from the pages without a web server to serve the
      * requests.
@@ -156,7 +155,7 @@ class UserJsonFormatter implements CommitDataProcessor.OutputFormatter<UserData>
      * See e.g. http://stackoverflow.com/questions/7346563/loading-local-json-file
      */
     private void writeUserdataJsonFile(@Nonnull IdentityRecord record, @Nonnull String json) {
-        String filePath = "users" + File.separator + record.getFilenameStem() + ".js";
+        String filePath = USER_DATA_PATH + File.separator + record.getFilenameStem() + ".js";
         System.out.println("Creating " + filePath);
 
         StringWriter writer = new StringWriter();
@@ -165,7 +164,7 @@ class UserJsonFormatter implements CommitDataProcessor.OutputFormatter<UserData>
                 json));
 
         FileWriter.writeFile(
-                outputDir.getPath() + File.separator + DATA_PATH + File.separator + filePath,
+                outputDir.getPath() + File.separator + filePath,
                 writer.toString());
     }
 
@@ -314,48 +313,6 @@ class UserJsonFormatter implements CommitDataProcessor.OutputFormatter<UserData>
          */
         public static String postprocess(String serializedJson) {
             return serializedJson.replaceAll("\"__\\$\\$ids\\[(.+)\\]\"", "ids[\"$1\"]");
-        }
-    }
-
-    private static class JsonFileBuilder {
-
-        @Nonnull
-        final File outputDir;
-
-        String outputFilename;
-        String serializedJs;
-        String memberVariableName;
-
-        public JsonFileBuilder(@Nonnull File outputDir) {
-            this.outputDir = outputDir;
-        }
-
-        public JsonFileBuilder setOutputFilename(@Nonnull String outputFilename) {
-            this.outputFilename = outputFilename;
-            System.out.println("Creating " + this.outputFilename);
-            return this;
-        }
-
-        public JsonFileBuilder setMemberName(String memberVariableName) {
-            this.memberVariableName = memberVariableName;
-            return this;
-        }
-
-        public JsonFileBuilder setSerializedJs(String serializedJs) {
-            this.serializedJs = serializedJs;
-            return this;
-        }
-
-        public void build() {
-            StringWriter writer = new StringWriter();
-
-            writer.write(String.format("var %s = %s;",
-                    memberVariableName,
-                    serializedJs));
-
-            FileWriter.writeFile(outputDir.getPath()
-                    + File.separator + DATA_PATH
-                    + File.separator + outputFilename, writer.toString());
         }
     }
 }

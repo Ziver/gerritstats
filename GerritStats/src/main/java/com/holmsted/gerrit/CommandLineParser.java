@@ -20,7 +20,7 @@ import javax.annotation.Nonnull;
 @SuppressWarnings("unused")
 public class CommandLineParser {
 
-    private static final String DEFAULT_OUTPUT_DIR = "out";
+    private static final String DEFAULT_OUTPUT_DIR = "out-hml";
 
     @Parameter(names = {"-f", "--file", "--files"},
             description = "Read output from comma-separated list of files or directories. "
