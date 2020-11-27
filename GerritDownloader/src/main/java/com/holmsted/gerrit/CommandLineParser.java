@@ -152,6 +152,7 @@ public class CommandLineParser {
         try {
             jCommander.parse(args);
         } catch (ParameterException e) {
+            e.printStackTrace();
             return false;
         }
 

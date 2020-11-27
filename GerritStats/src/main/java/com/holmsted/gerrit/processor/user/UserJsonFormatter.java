@@ -13,31 +13,24 @@ import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.holmsted.file.FileWriter;
 import com.holmsted.gerrit.Commit;
 import com.holmsted.gerrit.Commit.Identity;
 import com.holmsted.gerrit.OutputSettings;
 import com.holmsted.gerrit.processor.OutputFormatter;
 import com.holmsted.gerrit.processor.user.IdentityRecord.ReviewerData;
-import com.holmsted.json.JsonFileBuilder;
 
 import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
 
 @SuppressWarnings("PMD.ExcessiveImports")
 public class UserJsonFormatter implements OutputFormatter<UserData> {
-    private static final String ROOT_OUTPUT_DIR = "data";
-    private static final String USER_DATA_PATH = "users";
+    private static final String ROOT_OUTPUT_DIR = "data/user/";
 
     private final File outputDir;
     private final Map<String, Identity> identities = new HashMap<>();
@@ -64,7 +57,6 @@ public class UserJsonFormatter implements OutputFormatter<UserData> {
                 .setPrettyPrinting()
                 .registerTypeAdapter(PatchSetCommentTable.class, new PatchSetCommentTableSerializer())
                 .registerTypeAdapter(ReviewerDataTable.class, new ReviewerDataTableSerializer())
-                .registerTypeAdapter(Identity.class, new IdentityMappingSerializer())
                 .registerTypeAdapterFactory(new IdentityRecordTypeAdapterFactory())
                 .create();
 
@@ -76,36 +68,13 @@ public class UserJsonFormatter implements OutputFormatter<UserData> {
                     identities.put(identity.getIdentifier(), identity));
 
             String json = gson.toJson(record);
-            json = IdentityMappingSerializer.postprocess(json);
 
-            writeUserdataJsonFile(record, json);
+            OutputFormatter.writeFile(outputDir, record.getFilenameStem(), json);
         }
 
-        System.out.println("Output written to " + outputDir.getAbsolutePath());
+        System.out.println("User data written to: " + outputDir.getAbsolutePath());
     }
 
-    /**
-     * Writes a .js file with a json object for the given identity record.
-     *
-     * Ideally, pure .json files would be written,but it's not easily possible
-     * to load json files locally from the pages without a web server to serve the
-     * requests.
-     *
-     * See e.g. http://stackoverflow.com/questions/7346563/loading-local-json-file
-     */
-    private void writeUserdataJsonFile(@Nonnull IdentityRecord record, @Nonnull String json) {
-        String filePath = USER_DATA_PATH + File.separator + record.getFilenameStem() + ".js";
-        System.out.println("Creating " + filePath);
-
-        StringWriter writer = new StringWriter();
-        writer.write(String.format("userdata['%s'] = %s;",
-                record.getFilenameStem(),
-                json));
-
-        FileWriter.writeFile(
-                outputDir.getPath() + File.separator + filePath,
-                writer.toString());
-    }
 
     private static class PatchSetCommentTableSerializer implements JsonSerializer<PatchSetCommentTable> {
 
@@ -171,29 +140,6 @@ public class UserJsonFormatter implements OutputFormatter<UserData> {
                     return delegate.fromJsonTree(tree);
                 }
             };
-        }
-    }
-
-    /**
-     * This hacky mapping reduces the .json file sizes by about 30%, by using a variable reference
-     * for all identities.
-     *
-     * Because the writer methods in gson are final, it doesn't seem possible to
-     * write e.g. variable references in the code, so any '__$$users[' strings are replaced
-     * with a real variable reference in a postprocessing step.
-     */
-    private static class IdentityMappingSerializer implements JsonSerializer<Commit.Identity> {
-        @Override
-        public JsonElement serialize(Identity identity, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive("__$$ids[" + identity.getIdentifier() + "]");
-        }
-
-        /**
-         * Processes the passed json string so that all found __$$users[] instances are replaced
-         * with actual array references.
-         */
-        public static String postprocess(String serializedJson) {
-            return serializedJson.replaceAll("\"__\\$\\$ids\\[(.+)\\]\"", "ids[\"$1\"]");
         }
     }
 }

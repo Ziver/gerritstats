@@ -1,4 +1,4 @@
-package com.holmsted.gerrit.processor.file;
+package com.holmsted.gerrit.processor.message;
 
 import com.holmsted.gerrit.Commit;
 import com.holmsted.gerrit.CommitFilter;
@@ -7,25 +7,39 @@ import com.holmsted.gerrit.QueryData;
 import com.holmsted.gerrit.processor.CommitDataProcessor;
 import com.holmsted.gerrit.processor.CommitVisitor;
 import com.holmsted.gerrit.processor.OutputFormatter;
+import com.holmsted.gerrit.processor.file.FileData;
+import com.holmsted.gerrit.processor.file.FileJsonFormatter;
 import com.holmsted.gerrit.processor.user.UserData;
 
 import javax.annotation.Nonnull;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
-public class FileDataProcessor extends CommitDataProcessor<FileData> {
+public class MessageDataProcessor extends CommitDataProcessor<MessageData> {
+    final private String messageTag;
+    final private Pattern messagePattern;
 
-    public FileDataProcessor(@Nonnull CommitFilter filter, @Nonnull OutputSettings outputSettings) {
+
+    public MessageDataProcessor(@Nonnull CommitFilter filter, @Nonnull String messageTag, @Nonnull OutputSettings outputSettings) {
         super(filter, outputSettings);
+
+        this.messageTag = messageTag;
+        this.messagePattern = Pattern.compile(".*" + messageTag + ".*");
     }
 
     @Override
-    public FileData process(@Nonnull QueryData queryData) {
-        final FileData records = new FileData();
+    public MessageData process(@Nonnull QueryData queryData) {
+        final MessageData records = new MessageData(messageTag);
 
         CommitVisitor visitor = new CommitVisitor(getCommitFilter()) {
             @Override
             public void visitCommit(@Nonnull Commit commit) {
+                Matcher match = messagePattern.matcher(commit.commitMessage);
 
+                if (match.find()) {
+                    records.addCommit(commit);
+                }
             }
 
             @Override
@@ -40,14 +54,16 @@ public class FileDataProcessor extends CommitDataProcessor<FileData> {
                                              @Nonnull Commit.PatchSetComment patchSetComment) {}
         };
 
+        visitor.visit(queryData.getCommits());
+
         return records;
     }
 
     @Nonnull
     @Override
-    public OutputFormatter<FileData>[] createOutputFormatter() {
+    public OutputFormatter<MessageData>[] createOutputFormatter() {
         return new OutputFormatter[] {
-                new FileJsonFormatter(getOutputSettings())
+                new MessageJsonFormatter(getOutputSettings())
         };
     }
 }

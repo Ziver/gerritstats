@@ -3,8 +3,8 @@ package com.holmsted.gerrit;
 import com.holmsted.file.FileReader;
 import com.holmsted.gerrit.GerritStatParser.GerritData;
 import com.holmsted.gerrit.processor.CommitDataProcessor;
-import com.holmsted.gerrit.processor.OutputFormatter;
 import com.holmsted.gerrit.processor.file.FileDataProcessor;
+import com.holmsted.gerrit.processor.message.MessageDataProcessor;
 import com.holmsted.gerrit.processor.user.UserDataProcessor;
 
 import java.io.File;
@@ -21,7 +21,6 @@ public final class GerritStatsMain {
     public static void main(String[] args) {
         CommandLineParser commandLine = new CommandLineParser();
         if (!commandLine.parse(args)) {
-            System.out.println("Reads and outputs Gerrit statistics.");
             commandLine.printUsage();
             System.exit(1);
             return;
@@ -63,10 +62,19 @@ public final class GerritStatsMain {
             queryData = queryData.anonymize();
         }
 
-        CommitDataProcessor[] processors = new CommitDataProcessor[]{
-            new UserDataProcessor(filter, outputSettings),
-            new FileDataProcessor(filter, outputSettings),
-        };
+        // -----------------------------------------
+        // Prepare processors
+        // -----------------------------------------
+
+        List<CommitDataProcessor> processors = new ArrayList<>();
+        processors.add(new UserDataProcessor(filter, outputSettings));
+        processors.add(new FileDataProcessor(filter, outputSettings));
+
+        for (String messageTag : commandLine.getMessageTags()) {
+            processors.add(new MessageDataProcessor(filter, messageTag, outputSettings));
+        }
+
+        // Execute processors
 
         for (CommitDataProcessor processor : processors) {
             processor.invoke(queryData);
@@ -99,6 +107,5 @@ public final class GerritStatsMain {
         return result;
     }
 
-    private GerritStatsMain() {
-    }
+    private GerritStatsMain() {}
 }

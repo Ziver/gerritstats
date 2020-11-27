@@ -22,7 +22,7 @@ import java.util.*;
 
 @SuppressWarnings("PMD.ExcessiveImports")
 public class UserIdentityJsonFormatter implements OutputFormatter<UserData> {
-    private static final String ROOT_OUTPUT_DIR = "data";
+    private static final String ROOT_OUTPUT_DIR = "data/";
 
     private final File outputDir;
     private final Map<String, Identity> identities = new HashMap<>();
@@ -38,8 +38,6 @@ public class UserIdentityJsonFormatter implements OutputFormatter<UserData> {
         if (!outputDir.exists() && !outputDir.mkdirs()) {
             throw new IOError(new IOException("Cannot create output directory " + outputDir.getAbsolutePath()));
         }
-
-        IdentityRecordList orderedList = data.toOrderedList(new AlphabeticalOrderComparator());
 
         for (Identity identity : data.keySet()) {
             identities.put(identity.getIdentifier(), identity);
@@ -77,29 +75,6 @@ public class UserIdentityJsonFormatter implements OutputFormatter<UserData> {
             }
 
             return json;
-        }
-    }
-
-    /**
-     * This hacky mapping reduces the .json file sizes by about 30%, by using a variable reference
-     * for all identities.
-     *
-     * Because the writer methods in gson are final, it doesn't seem possible to
-     * write e.g. variable references in the code, so any '__$$users[' strings are replaced
-     * with a real variable reference in a postprocessing step.
-     */
-    private static class IdentityMappingSerializer implements JsonSerializer<Identity> {
-        @Override
-        public JsonElement serialize(Identity identity, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive("__$$ids[" + identity.getIdentifier() + "]");
-        }
-
-        /**
-         * Processes the passed json string so that all found __$$users[] instances are replaced
-         * with actual array references.
-         */
-        public static String postprocess(String serializedJson) {
-            return serializedJson.replaceAll("\"__\\$\\$ids\\[(.+)\\]\"", "ids[\"$1\"]");
         }
     }
 }

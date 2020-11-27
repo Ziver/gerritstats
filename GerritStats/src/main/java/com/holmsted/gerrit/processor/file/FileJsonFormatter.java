@@ -22,21 +22,25 @@ import java.util.*;
 
 @SuppressWarnings("PMD.ExcessiveImports")
 public class FileJsonFormatter implements OutputFormatter<FileData> {
-    private static final String RES_OUTPUT_DIR = ".";
-    private static final String DATA_PATH = ".";
+    private static final String ROOT_OUTPUT_DIR = "data/file/";
 
     private final File outputDir;
-    private final File resOutputDir;
-
-    private final Map<String, Identity> identities = new HashMap<>();
 
     public FileJsonFormatter(@Nonnull OutputSettings outputSettings) {
-        outputDir = new File(outputSettings.getOutputDir());
-        resOutputDir = new File(outputDir.getAbsolutePath() + File.separator + RES_OUTPUT_DIR);
+        outputDir = new File(outputSettings.getOutputDir(), ROOT_OUTPUT_DIR);
     }
 
     @Override
     public void format(@Nonnull FileData data) {
+        if (!outputDir.exists() && !outputDir.mkdirs()) {
+            throw new IOError(new IOException("Cannot create output directory " + outputDir.getAbsolutePath()));
+        }
 
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String json = gson.toJson(data.getCommits(null));
+
+        //OutputFormatter.writeFile(outputDir, data.get(), json);
+
+        System.out.println("File data written to: " + outputDir.getAbsolutePath());
     }
 }

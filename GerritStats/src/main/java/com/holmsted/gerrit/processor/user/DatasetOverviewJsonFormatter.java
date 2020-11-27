@@ -22,8 +22,7 @@ import java.util.*;
 
 @SuppressWarnings("PMD.ExcessiveImports")
 public class DatasetOverviewJsonFormatter implements OutputFormatter<UserData> {
-    private static final String ROOT_OUTPUT_DIR = "data";
-    private static final String USER_DATA_PATH = "users";
+    private static final String ROOT_OUTPUT_DIR = "data/";
 
     private final File outputDir;
 
@@ -41,7 +40,6 @@ public class DatasetOverviewJsonFormatter implements OutputFormatter<UserData> {
 
         Gson gson = new GsonBuilder()
                 .setPrettyPrinting()
-                .registerTypeAdapter(Identity.class, new IdentityMappingSerializer())
                 .registerTypeAdapter(IdentityRecord.class, new IdentityRecordOverviewSerializer())
                 .create();
 
@@ -61,7 +59,7 @@ public class DatasetOverviewJsonFormatter implements OutputFormatter<UserData> {
                 .setSerializedJs(gson.toJson(datasetOverview))
                 .build();
 
-        System.out.println("Output written to " + outputDir.getAbsolutePath());
+        System.out.println("Dataset overview written to: " + outputDir.getAbsolutePath());
     }
 
     private static class IdentityRecordOverviewSerializer implements JsonSerializer<IdentityRecord> {
@@ -99,29 +97,6 @@ public class DatasetOverviewJsonFormatter implements OutputFormatter<UserData> {
             }
             json.add("myReviewerList", context.serialize(reviewerList));
             return json;
-        }
-    }
-
-    /**
-     * This hacky mapping reduces the .json file sizes by about 30%, by using a variable reference
-     * for all identities.
-     *
-     * Because the writer methods in gson are final, it doesn't seem possible to
-     * write e.g. variable references in the code, so any '__$$users[' strings are replaced
-     * with a real variable reference in a postprocessing step.
-     */
-    private static class IdentityMappingSerializer implements JsonSerializer<Identity> {
-        @Override
-        public JsonElement serialize(Identity identity, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive("__$$ids[" + identity.getIdentifier() + "]");
-        }
-
-        /**
-         * Processes the passed json string so that all found __$$users[] instances are replaced
-         * with actual array references.
-         */
-        public static String postprocess(String serializedJson) {
-            return serializedJson.replaceAll("\"__\\$\\$ids\\[(.+)\\]\"", "ids[\"$1\"]");
         }
     }
 }
