@@ -17,6 +17,7 @@ allprojects {
     checkstyle {
         toolVersion = '7.1.1'
         configFile = file("${rootDir}/config/checkstyle.xml")
+        configProperties.checkstyleSuppressionsPath = file("${rootDir}/config/checkstyle_suppressions.xml").absolutePath
     }
 
     pmd {
