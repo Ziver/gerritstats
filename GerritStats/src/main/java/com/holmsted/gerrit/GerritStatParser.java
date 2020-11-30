@@ -1,5 +1,6 @@
 package com.holmsted.gerrit;
 
+import com.holmsted.gerrit.data.Commit;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,7 +15,7 @@ import javax.annotation.Nonnull;
 public class GerritStatParser {
 
     public static class ParserContext {
-        final GerritVersion version;
+        public final GerritVersion version;
 
         ParserContext(@Nonnull GerritVersion version) {
             this.version = version;

@@ -1,8 +1,6 @@
 package com.holmsted.gerrit.processor.message;
 
-import com.holmsted.gerrit.Commit;
-import com.holmsted.gerrit.QueryData;
-import com.holmsted.gerrit.processor.user.IdentityRecord;
+import com.holmsted.gerrit.data.Commit;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -22,7 +20,7 @@ public class MessageData {
     }
 
     public String getMessageTagID() {
-        return messageTag.toLowerCase().replace("\\W+", "_");
+        return messageTag.toLowerCase().replaceAll("\\W+", "_");
     }
 
 

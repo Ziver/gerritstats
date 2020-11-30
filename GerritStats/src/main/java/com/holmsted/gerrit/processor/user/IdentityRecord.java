@@ -1,10 +1,11 @@
 package com.holmsted.gerrit.processor.user;
 
-import com.holmsted.gerrit.Commit;
-import com.holmsted.gerrit.Commit.Approval;
-import com.holmsted.gerrit.Commit.Identity;
-import com.holmsted.gerrit.Commit.PatchSet;
+import com.holmsted.gerrit.data.Commit;
+import com.holmsted.gerrit.data.Approval;
+import com.holmsted.gerrit.data.Identity;
+import com.holmsted.gerrit.data.PatchSet;
 
+import com.holmsted.gerrit.data.PatchSetComment;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @SuppressWarnings("PMD.TooManyFields")
 public class IdentityRecord {
 
-    final Commit.Identity identity;
+    final Identity identity;
 
     int reviewCountPlus2;
     int reviewCountPlus1;
@@ -92,7 +93,7 @@ public class IdentityRecord {
 
         public void addWrittenComment(@Nonnull Commit commit,
                                       @Nonnull PatchSet patchSet,
-                                      @Nonnull Commit.PatchSetComment patchSetComment) {
+                                      @Nonnull PatchSetComment patchSetComment) {
             if (patchSet.author == null) {
                 return;
             }
@@ -101,7 +102,7 @@ public class IdentityRecord {
         }
     }
 
-    public IdentityRecord(Commit.Identity identity) {
+    public IdentityRecord(Identity identity) {
         this.identity = identity;
     }
 
@@ -137,23 +138,23 @@ public class IdentityRecord {
         return addedAsReviewerTo;
     }
 
-    public List<Commit.PatchSetComment> getAllCommentsWritten() {
+    public List<PatchSetComment> getAllCommentsWritten() {
         return commentsWritten.getAllComments();
     }
 
-    public List<Commit.PatchSetComment> getAllCommentsReceived() {
-        List<Commit.PatchSetComment> allComments = new ArrayList<>();
-        for (List<Commit.PatchSetComment> comments : commentsReceived.values()) {
+    public List<PatchSetComment> getAllCommentsReceived() {
+        List<PatchSetComment> allComments = new ArrayList<>();
+        for (List<PatchSetComment> comments : commentsReceived.values()) {
             allComments.addAll(comments);
         }
         return allComments;
     }
 
-    public Map<Commit.Identity, ReviewerData> getReviewersForOwnCommits() {
+    public Map<Identity, ReviewerData> getReviewersForOwnCommits() {
         return reviewersForOwnCommits;
     }
 
-    public ReviewerData getReviewerDataForOwnCommitFor(@Nonnull Commit.Identity identity) {
+    public ReviewerData getReviewerDataForOwnCommitFor(@Nonnull Identity identity) {
         return reviewersForOwnCommits.get(identity);
     }
 
@@ -241,7 +242,7 @@ public class IdentityRecord {
         }
     }
 
-    public void addApprovalByThisIdentity(@Nonnull Commit.Identity patchSetAuthor, Approval approval) {
+    public void addApprovalByThisIdentity(@Nonnull Identity patchSetAuthor, Approval approval) {
         ReviewerData reviewerData = reviewRequestors.computeIfAbsent(patchSetAuthor, k -> new ReviewerData());
         reviewerData.approvalCount++;
         reviewerData.approvals.merge(approval.value, 1, Integer::sum);
@@ -302,25 +303,25 @@ public class IdentityRecord {
         return result;
     }
 
-    public List<Commit.Identity> getMyReviewerList() {
-        List<Commit.Identity> sortedIdentities = new ArrayList<>(reviewersForOwnCommits.keySet());
+    public List<Identity> getMyReviewerList() {
+        List<Identity> sortedIdentities = new ArrayList<>(reviewersForOwnCommits.keySet());
         Collections.sort(sortedIdentities, new ReviewerAddedCountComparator(reviewersForOwnCommits));
         return sortedIdentities;
     }
 
     @Nonnull
-    public List<Commit.Identity> getReviewRequestorList() {
-        List<Commit.Identity> sortedIdentities = new ArrayList<>(reviewRequestors.keySet());
+    public List<Identity> getReviewRequestorList() {
+        List<Identity> sortedIdentities = new ArrayList<>(reviewRequestors.keySet());
         Collections.sort(sortedIdentities, new ReviewerAddedCountComparator(reviewRequestors));
         return sortedIdentities;
     }
 
     @Nonnull
-    private ReviewerData getOrCreateReviewerForOwnCommit(@Nonnull Commit.Identity identity) {
+    private ReviewerData getOrCreateReviewerForOwnCommit(@Nonnull Identity identity) {
         return reviewersForOwnCommits.computeIfAbsent(identity, k -> new ReviewerData());
     }
 
-    public void addReviewerForOwnCommit(@Nonnull Commit.Identity identity) {
+    public void addReviewerForOwnCommit(@Nonnull Identity identity) {
         ReviewerData reviewerData = getOrCreateReviewerForOwnCommit(identity);
         reviewerData.addedAsReviewerCount++;
     }
@@ -340,7 +341,7 @@ public class IdentityRecord {
 
     public void addWrittenComment(@Nonnull Commit commit,
                                   @Nonnull  PatchSet patchSet,
-                                  @Nonnull Commit.PatchSetComment patchSetComment) {
+                                  @Nonnull PatchSetComment patchSetComment) {
         ReviewerData reviewsDoneForIdentity = reviewRequestors.computeIfAbsent(commit.owner,
                 k -> new ReviewerData());
         reviewsDoneForIdentity.commentCount++;
@@ -355,7 +356,7 @@ public class IdentityRecord {
 
     public void addReceivedComment(@Nonnull Commit commit,
                                    @Nonnull PatchSet patchSet,
-                                   Commit.PatchSetComment patchSetComment) {
+                                   PatchSetComment patchSetComment) {
         Identity reviewer = checkNotNull(patchSetComment.getReviewer());
         ReviewerData reviewerData = getOrCreateReviewerForOwnCommit(reviewer);
         reviewerData.commentCount++;

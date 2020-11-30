@@ -1,7 +1,7 @@
 package com.holmsted.gerrit.processor.user;
 
-import com.holmsted.gerrit.Commit;
 import com.holmsted.gerrit.QueryData;
+import com.holmsted.gerrit.data.Identity;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,7 +13,7 @@ import javax.annotation.Nonnull;
 
 public class UserData {
 
-    private final Map<Commit.Identity, IdentityRecord> records = new Hashtable<>();
+    private final Map<Identity, IdentityRecord> records = new Hashtable<>();
 
     private QueryData queryData;
     private long fromDate;
@@ -52,7 +52,7 @@ public class UserData {
         return toDate;
     }
 
-    public IdentityRecord get(@Nonnull Commit.Identity identity) {
+    public IdentityRecord get(@Nonnull Identity identity) {
         return records.get(identity);
     }
 
@@ -60,11 +60,11 @@ public class UserData {
         records.clear();
     }
 
-    public void put(@Nonnull Commit.Identity identity, IdentityRecord identityRecord) {
+    public void put(@Nonnull Identity identity, IdentityRecord identityRecord) {
         records.put(identity, identityRecord);
     }
 
-    public Set<Commit.Identity> keySet() {
+    public Set<Identity> keySet() {
         return records.keySet();
     }
 }

@@ -13,9 +13,10 @@ import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.holmsted.gerrit.Commit;
-import com.holmsted.gerrit.Commit.Identity;
+import com.holmsted.gerrit.data.Commit;
+import com.holmsted.gerrit.data.Identity;
 import com.holmsted.gerrit.OutputSettings;
+import com.holmsted.gerrit.data.serializer.IdentityUsernameSerializer;
 import com.holmsted.gerrit.processor.OutputFormatter;
 import com.holmsted.gerrit.processor.user.IdentityRecord.ReviewerData;
 
@@ -55,8 +56,10 @@ public class UserJsonFormatter implements OutputFormatter<UserData> {
 
         Gson gson = new GsonBuilder()
                 .setPrettyPrinting()
+                .registerTypeAdapter(Identity.class, new IdentityUsernameSerializer())
                 .registerTypeAdapter(PatchSetCommentTable.class, new PatchSetCommentTableSerializer())
                 .registerTypeAdapter(ReviewerDataTable.class, new ReviewerDataTableSerializer())
+                .registerTypeAdapter(Identity.class, new IdentityUsernameSerializer())
                 .registerTypeAdapterFactory(new IdentityRecordTypeAdapterFactory())
                 .create();
 

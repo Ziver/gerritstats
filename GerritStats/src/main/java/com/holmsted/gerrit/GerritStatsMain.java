@@ -2,6 +2,7 @@ package com.holmsted.gerrit;
 
 import com.holmsted.file.FileReader;
 import com.holmsted.gerrit.GerritStatParser.GerritData;
+import com.holmsted.gerrit.data.Commit;
 import com.holmsted.gerrit.processor.CommitDataProcessor;
 import com.holmsted.gerrit.processor.file.FileDataProcessor;
 import com.holmsted.gerrit.processor.message.MessageDataProcessor;

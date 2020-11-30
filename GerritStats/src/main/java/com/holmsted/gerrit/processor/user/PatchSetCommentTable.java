@@ -1,6 +1,7 @@
 package com.holmsted.gerrit.processor.user;
 
-import com.holmsted.gerrit.Commit;
+import com.holmsted.gerrit.data.Commit;
+import com.holmsted.gerrit.data.PatchSetComment;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,14 +12,14 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-public class PatchSetCommentTable implements Map<Commit, List<Commit.PatchSetComment>> {
+public class PatchSetCommentTable implements Map<Commit, List<PatchSetComment>> {
 
-    private final Map<Commit, List<Commit.PatchSetComment>> commitToComment = new Hashtable<>();
-    private final Map<Commit.PatchSetComment, Commit> commentToCommit = new Hashtable<>();
-    private final List<Commit.PatchSetComment> allComments = new ArrayList<>();
+    private final Map<Commit, List<PatchSetComment>> commitToComment = new Hashtable<>();
+    private final Map<PatchSetComment, Commit> commentToCommit = new Hashtable<>();
+    private final List<PatchSetComment> allComments = new ArrayList<>();
 
-    public void addCommentForCommit(@Nonnull Commit commit, @Nonnull Commit.PatchSetComment patchSetComment) {
-        List<Commit.PatchSetComment> patchSetComments = commitToComment.computeIfAbsent(commit,
+    public void addCommentForCommit(@Nonnull Commit commit, @Nonnull PatchSetComment patchSetComment) {
+        List<PatchSetComment> patchSetComments = commitToComment.computeIfAbsent(commit,
                 keyCommit -> new ArrayList<>());
         patchSetComments.add(patchSetComment);
 
@@ -29,7 +30,7 @@ public class PatchSetCommentTable implements Map<Commit, List<Commit.PatchSetCom
     }
 
     @Nonnull
-    public List<Commit.PatchSetComment> getAllComments() {
+    public List<PatchSetComment> getAllComments() {
         return allComments;
     }
 
@@ -54,22 +55,22 @@ public class PatchSetCommentTable implements Map<Commit, List<Commit.PatchSetCom
     }
 
     @Override
-    public List<Commit.PatchSetComment> get(Object key) {
+    public List<PatchSetComment> get(Object key) {
         return commitToComment.get(key);
     }
 
     @Override
-    public List<Commit.PatchSetComment> put(Commit key, List<Commit.PatchSetComment> value) {
+    public List<PatchSetComment> put(Commit key, List<PatchSetComment> value) {
         throw new UnsupportedOperationException("Call addCommentForCommit()");
     }
 
     @Override
-    public List<Commit.PatchSetComment> remove(Object key) {
+    public List<PatchSetComment> remove(Object key) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void putAll(Map<? extends Commit, ? extends List<Commit.PatchSetComment>> map) {
+    public void putAll(Map<? extends Commit, ? extends List<PatchSetComment>> map) {
         throw new UnsupportedOperationException();
     }
 
@@ -84,12 +85,12 @@ public class PatchSetCommentTable implements Map<Commit, List<Commit.PatchSetCom
     }
 
     @Override
-    public Collection<List<Commit.PatchSetComment>> values() {
+    public Collection<List<PatchSetComment>> values() {
         return commitToComment.values();
     }
 
     @Override
-    public Set<Entry<Commit, List<Commit.PatchSetComment>>> entrySet() {
+    public Set<Entry<Commit, List<PatchSetComment>>> entrySet() {
         return commitToComment.entrySet();
     }
 }

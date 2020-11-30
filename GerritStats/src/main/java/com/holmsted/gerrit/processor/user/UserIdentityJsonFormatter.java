@@ -1,22 +1,15 @@
 package com.holmsted.gerrit.processor.user;
 
 import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import com.holmsted.file.FileWriter;
-import com.holmsted.gerrit.Commit;
-import com.holmsted.gerrit.Commit.Identity;
+import com.holmsted.gerrit.data.Identity;
 import com.holmsted.gerrit.OutputSettings;
 import com.holmsted.gerrit.processor.OutputFormatter;
-import com.holmsted.gerrit.processor.user.IdentityRecord.ReviewerData;
 import com.holmsted.json.JsonFileBuilder;
 
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.util.*;
 

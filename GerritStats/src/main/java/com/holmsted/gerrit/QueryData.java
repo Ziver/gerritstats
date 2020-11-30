@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.holmsted.gerrit.anonymizer.CommitAnonymizer;
 
+import com.holmsted.gerrit.data.Commit;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;

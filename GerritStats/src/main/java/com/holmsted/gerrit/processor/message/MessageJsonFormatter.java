@@ -1,17 +1,13 @@
 package com.holmsted.gerrit.processor.message;
 
 import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import com.holmsted.gerrit.Commit;
 import com.holmsted.gerrit.OutputSettings;
+import com.holmsted.gerrit.data.ChangeComment;
+import com.holmsted.gerrit.data.Identity;
+import com.holmsted.gerrit.data.PatchSet;
+import com.holmsted.gerrit.data.serializer.IdentityUsernameSerializer;
+import com.holmsted.gerrit.data.serializer.ReviewDataExclusionStrategy;
 import com.holmsted.gerrit.processor.OutputFormatter;
-import com.holmsted.gerrit.processor.file.FileData;
-import com.holmsted.gerrit.processor.user.IdentityRecord;
-import com.holmsted.gerrit.processor.user.PatchSetCommentTable;
-import com.holmsted.gerrit.processor.user.ReviewerDataTable;
-import com.holmsted.gerrit.processor.user.UserJsonFormatter;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -34,7 +30,10 @@ public class MessageJsonFormatter implements OutputFormatter<MessageData> {
             throw new IOError(new IOException("Cannot create output directory " + outputDir.getAbsolutePath()));
         }
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = new GsonBuilder().setPrettyPrinting()
+                .registerTypeAdapter(Identity.class, new IdentityUsernameSerializer())
+                .setExclusionStrategies(new ReviewDataExclusionStrategy())
+                .create();
         String json = gson.toJson(data.getCommits());
 
         OutputFormatter.writeFile(outputDir, data.getMessageTagID(), json);

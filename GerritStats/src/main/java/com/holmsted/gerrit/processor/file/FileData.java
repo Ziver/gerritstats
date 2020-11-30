@@ -1,21 +1,26 @@
 package com.holmsted.gerrit.processor.file;
 
-import com.holmsted.gerrit.Commit;
-import com.holmsted.gerrit.QueryData;
-import com.holmsted.gerrit.processor.user.IdentityRecord;
-import com.holmsted.gerrit.processor.user.IdentityRecordList;
+import com.holmsted.gerrit.data.Commit;
 
-import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.*;
 
-public class FileData {
-    private Map<File,List<Commit>> files = new HashMap<>();
+public class FileData implements Iterable<FileRecord> {
+    private Map<String,FileRecord> files = new HashMap<>();
 
 
 
-
-    public List<Commit> getCommits(File file) {
+    public FileRecord getCommits(String file) {
         return files.get(file);
+    }
+
+    @Override
+    public Iterator<FileRecord> iterator() {
+        return files.values().iterator();
+    }
+
+    public void addFile(String file) {
+        if (!files.containsKey(file))
+            files.put(file, new FileRecord(file));
     }
 }

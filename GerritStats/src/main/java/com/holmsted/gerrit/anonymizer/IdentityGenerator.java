@@ -1,7 +1,7 @@
 package com.holmsted.gerrit.anonymizer;
 
 import com.holmsted.RandomLists;
-import com.holmsted.gerrit.Commit;
+import com.holmsted.gerrit.data.Identity;
 import com.holmsted.resources.ResourceReader;
 
 import java.util.ArrayList;
@@ -62,11 +62,11 @@ public class IdentityGenerator {
     }
 
     @Nonnull
-    public Commit.Identity generateIdentity() {
+    public Identity generateIdentity() {
         Name generatedName = generateName();
         String domain = generateDomain();
 
-        return new Commit.Identity(
+        return new Identity(
                 generatedName.getDisplayName(),
                 generatedName.getEmail(domain),
                 generatedName.username);

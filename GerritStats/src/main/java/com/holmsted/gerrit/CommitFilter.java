@@ -1,5 +1,8 @@
 package com.holmsted.gerrit;
 
+import com.holmsted.gerrit.data.Commit;
+import com.holmsted.gerrit.data.Identity;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +43,7 @@ public class CommitFilter {
         return includedBranches.isEmpty() || includedBranches.contains(commit.branch);
     }
 
-    public boolean isIncluded(@Nullable Commit.Identity identity) {
+    public boolean isIncluded(@Nullable Identity identity) {
         if (identity == null || identity.email == null) {
             return includeEmptyEmails;
         } else {

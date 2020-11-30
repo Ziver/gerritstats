@@ -1,15 +1,15 @@
 package com.holmsted.gerrit.processor.message;
 
-import com.holmsted.gerrit.Commit;
+import com.holmsted.gerrit.data.Approval;
+import com.holmsted.gerrit.data.Commit;
 import com.holmsted.gerrit.CommitFilter;
 import com.holmsted.gerrit.OutputSettings;
 import com.holmsted.gerrit.QueryData;
+import com.holmsted.gerrit.data.PatchSet;
+import com.holmsted.gerrit.data.PatchSetComment;
 import com.holmsted.gerrit.processor.CommitDataProcessor;
 import com.holmsted.gerrit.processor.CommitVisitor;
 import com.holmsted.gerrit.processor.OutputFormatter;
-import com.holmsted.gerrit.processor.file.FileData;
-import com.holmsted.gerrit.processor.file.FileJsonFormatter;
-import com.holmsted.gerrit.processor.user.UserData;
 
 import javax.annotation.Nonnull;
 import java.util.regex.Matcher;
@@ -43,15 +43,15 @@ public class MessageDataProcessor extends CommitDataProcessor<MessageData> {
             }
 
             @Override
-            public void visitPatchSet(@Nonnull Commit commit, @Nonnull Commit.PatchSet patchSet) {}
+            public void visitPatchSet(@Nonnull Commit commit, @Nonnull PatchSet patchSet) {}
 
             @Override
-            public void visitApproval(@Nonnull Commit.PatchSet patchSet, @Nonnull Commit.Approval approval) {}
+            public void visitApproval(@Nonnull PatchSet patchSet, @Nonnull Approval approval) {}
 
             @Override
             public void visitPatchSetComment(@Nonnull Commit commit,
-                                             @Nonnull Commit.PatchSet patchSet,
-                                             @Nonnull Commit.PatchSetComment patchSetComment) {}
+                                             @Nonnull PatchSet patchSet,
+                                             @Nonnull PatchSetComment patchSetComment) {}
         };
 
         visitor.visit(queryData.getCommits());

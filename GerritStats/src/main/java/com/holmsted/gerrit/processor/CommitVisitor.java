@@ -1,6 +1,6 @@
 package com.holmsted.gerrit.processor;
 
-import com.holmsted.gerrit.Commit;
+import com.holmsted.gerrit.data.*;
 import com.holmsted.gerrit.CommitFilter;
 
 import java.util.List;
@@ -24,20 +24,20 @@ public abstract class CommitVisitor {
             }
             visitCommit(commit);
 
-            for (Commit.PatchSet patchSet: commit.patchSets) {
+            for (PatchSet patchSet: commit.patchSets) {
                 if (!isIncluded(patchSet.author)) {
                     continue;
                 }
                 visitPatchSet(commit, patchSet);
 
-                for (Commit.Approval approval : patchSet.approvals) {
+                for (Approval approval : patchSet.approvals) {
                     if (!isIncluded(approval.grantedBy)) {
                         continue;
                     }
                     visitApproval(patchSet, approval);
                 }
 
-                for (Commit.PatchSetComment patchSetComment : patchSet.comments) {
+                for (PatchSetComment patchSetComment : patchSet.comments) {
                     if (!isIncluded(patchSetComment.reviewer)) {
                         continue;
                     }
@@ -51,17 +51,17 @@ public abstract class CommitVisitor {
         return filter.isIncluded(commit);
     }
 
-    private boolean isIncluded(@Nullable Commit.Identity identity) {
+    private boolean isIncluded(@Nullable Identity identity) {
         return filter.isIncluded(identity);
     }
 
     public abstract void visitCommit(@Nonnull Commit commit);
 
-    public abstract void visitPatchSet(@Nonnull Commit commit, @Nonnull Commit.PatchSet patchSet);
+    public abstract void visitPatchSet(@Nonnull Commit commit, @Nonnull PatchSet patchSet);
 
-    public abstract void visitApproval(@Nonnull Commit.PatchSet patchSet, @Nonnull Commit.Approval approval);
+    public abstract void visitApproval(@Nonnull PatchSet patchSet, @Nonnull Approval approval);
 
     public abstract void visitPatchSetComment(@Nonnull Commit commit,
-                                              @Nonnull Commit.PatchSet patchSet,
-                                              @Nonnull Commit.PatchSetComment patchSetComment);
+                                              @Nonnull PatchSet patchSet,
+                                              @Nonnull PatchSetComment patchSetComment);
 }

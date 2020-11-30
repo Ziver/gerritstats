@@ -1,7 +1,6 @@
 package com.holmsted.gerrit.processor.user;
 
-import com.holmsted.gerrit.Commit;
-import com.holmsted.gerrit.Commit.Identity;
+import com.holmsted.gerrit.data.*;
 import com.holmsted.gerrit.CommitFilter;
 import com.holmsted.gerrit.OutputSettings;
 import com.holmsted.gerrit.QueryData;
@@ -40,7 +39,7 @@ public class UserDataProcessor extends CommitDataProcessor<UserData> {
                     fromDate.set(commit.lastUpdatedDate);
                 }
 
-                for (Commit.Identity identity : commit.reviewers) {
+                for (Identity identity : commit.reviewers) {
                     if (!getCommitFilter().isIncluded(identity)) {
                         continue;
                     }
@@ -56,21 +55,21 @@ public class UserDataProcessor extends CommitDataProcessor<UserData> {
             }
 
             @Override
-            public void visitPatchSet(@Nonnull Commit commit, @Nonnull Commit.PatchSet patchSet) {
+            public void visitPatchSet(@Nonnull Commit commit, @Nonnull PatchSet patchSet) {
                 IdentityRecord ownerRecord = getOrCreateRecord(records, commit.owner);
-                for (Commit.Approval approval : patchSet.approvals) {
+                for (Approval approval : patchSet.approvals) {
                     if (approval.type == null) {
                         continue;
                     }
                     switch (approval.type) {
-                        case Commit.Approval.TYPE_CODE_REVIEW: {
+                        case Approval.TYPE_CODE_REVIEW: {
                             if (getCommitFilter().isIncluded(approval.grantedBy)
                                     && !ownerRecord.identity.equals(approval.grantedBy)) {
                                 ownerRecord.addApprovalForOwnCommit(approval.grantedBy, approval);
                             }
                             break;
                         }
-                        case Commit.Approval.TYPE_SUBMITTED: {
+                        case Approval.TYPE_SUBMITTED: {
                             ownerRecord.updateAverageTimeInCodeReview(approval.grantedOnDate - commit.createdOnDate);
                             break;
                         }
@@ -81,7 +80,7 @@ public class UserDataProcessor extends CommitDataProcessor<UserData> {
             }
 
             @Override
-            public void visitApproval(@Nonnull Commit.PatchSet patchSet, @Nonnull Commit.Approval approval) {
+            public void visitApproval(@Nonnull PatchSet patchSet, @Nonnull Approval approval) {
                 Identity grantedBy = approval.grantedBy;
                 Identity patchSetAuthor = patchSet.author;
                 if (grantedBy == null || patchSetAuthor == null) {
@@ -96,8 +95,8 @@ public class UserDataProcessor extends CommitDataProcessor<UserData> {
 
             @Override
             public void visitPatchSetComment(@Nonnull Commit commit,
-                                             @Nonnull Commit.PatchSet patchSet,
-                                             @Nonnull Commit.PatchSetComment patchSetComment) {
+                                             @Nonnull PatchSet patchSet,
+                                             @Nonnull PatchSetComment patchSetComment) {
                 IdentityRecord reviewerRecord = getOrCreateRecord(records, patchSetComment.reviewer);
                 if (!patchSet.author.equals(patchSetComment.reviewer)) {
                     reviewerRecord.addWrittenComment(commit, patchSet, patchSetComment);
@@ -119,7 +118,7 @@ public class UserDataProcessor extends CommitDataProcessor<UserData> {
     }
 
     @Nonnull
-    private IdentityRecord getOrCreateRecord(UserData records, @Nonnull Commit.Identity identity) {
+    private IdentityRecord getOrCreateRecord(UserData records, @Nonnull Identity identity) {
         IdentityRecord identityRecord = records.get(identity);
         if (identityRecord == null) {
             identityRecord = new IdentityRecord(identity);

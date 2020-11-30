@@ -1,11 +1,11 @@
 package com.holmsted.gerrit.anonymizer;
 
-import com.holmsted.gerrit.Commit;
-import com.holmsted.gerrit.Commit.Approval;
-import com.holmsted.gerrit.Commit.ChangeComment;
-import com.holmsted.gerrit.Commit.Identity;
-import com.holmsted.gerrit.Commit.PatchSet;
-import com.holmsted.gerrit.Commit.PatchSetComment;
+import com.holmsted.gerrit.data.Commit;
+import com.holmsted.gerrit.data.Approval;
+import com.holmsted.gerrit.data.ChangeComment;
+import com.holmsted.gerrit.data.Identity;
+import com.holmsted.gerrit.data.PatchSet;
+import com.holmsted.gerrit.data.PatchSetComment;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -51,7 +51,7 @@ public class CommitAnonymizer {
         return commits.stream().map(this::anonymizeCommit).collect(Collectors.toList());
     }
 
-    private Identity getOrCreateIdentity(@Nullable Commit.Identity identityToAnonymize) {
+    private Identity getOrCreateIdentity(@Nullable Identity identityToAnonymize) {
         if (identityToAnonymize == null) {
             return null;
         } else {

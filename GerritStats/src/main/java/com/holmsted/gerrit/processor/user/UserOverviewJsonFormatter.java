@@ -2,21 +2,13 @@ package com.holmsted.gerrit.processor.user;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import com.holmsted.file.FileWriter;
-import com.holmsted.gerrit.Commit;
-import com.holmsted.gerrit.Commit.Identity;
+import com.holmsted.gerrit.data.Identity;
 import com.holmsted.gerrit.OutputSettings;
+import com.holmsted.gerrit.data.serializer.IdentityUsernameSerializer;
 import com.holmsted.gerrit.processor.OutputFormatter;
 import com.holmsted.gerrit.processor.user.IdentityRecord.ReviewerData;
 import com.holmsted.json.JsonFileBuilder;
@@ -24,10 +16,8 @@ import com.holmsted.json.JsonFileBuilder;
 import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +49,7 @@ public class UserOverviewJsonFormatter implements OutputFormatter<UserData> {
 
         Gson gson = new GsonBuilder()
                 .setPrettyPrinting()
+                .registerTypeAdapter(Identity.class, new IdentityUsernameSerializer())
                 .registerTypeAdapter(IdentityRecord.class, new IdentityRecordOverviewSerializer())
                 .create();
 
